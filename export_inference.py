@@ -4,7 +4,6 @@ import os
 
 import torch
 from omegaconf import OmegaConf
-from torchsummary import summary
 
 from models.first_stage.vqgan import VQModelIF, VQModelInference
 from models.second_stage.fm_model import ModelIF, ModelInference
@@ -48,7 +47,16 @@ inference.vit = orbis.ema_vit
 # use torch summary to verify the model
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 inference = inference.to(device)
-summary(inference, input_size=(1, 1, 288, 512))
+
+x = torch.randn(1, 2, 3, 288, 512).to(device)
+f = torch.ones (1).to(device) * 20.0
+
+with torch.no_grad():
+    output, features = inference(x, f)
+
+print("Inference model output shape:", output.shape)
+print("Inference model features count:", len(features))
+print("Inference model features shape:", features[0].shape)
 
 # save checkpoint
 inference_model_folder = os.path.expandvars("$WM_WORK_DIR/orbis_288x512_encoding")

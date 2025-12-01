@@ -502,7 +502,7 @@ class ModelInference(nn.Module):
         self.enc_scale_dino = enc_scale_dino
 
     def encode_frames(self, images):
-        if len(images.size()) == 5:
+        if images.ndim == 5:
             b, f, e, h, w = images.size()
             images = rearrange(images, "b f e h w -> (b f) e h w")
         else:
@@ -518,6 +518,6 @@ class ModelInference(nn.Module):
     def forward(self, images, frame_rate):
         images = self.encode_frames(images)
         t = torch.zeros((images.shape[0],), device=images.device)
-        target = torch.empty(0, *images.shape[1:])
+        target = torch.empty(images.shape[0], 0, *images.shape[2:], device=images.device)
         x, features = self.vit(target, images, t, frame_rate=frame_rate, return_features=True)
         return x, features

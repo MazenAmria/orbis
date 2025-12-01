@@ -1,18 +1,19 @@
-import os
 import math
-from copy import deepcopy
+import os
 from collections import OrderedDict
+from copy import deepcopy
 
-import torch
-import torchvision.utils as vutils
 import pytorch_lightning as pl
-from torch.optim.lr_scheduler import LambdaLR
+import torch
+import torch.nn as nn
+import torchvision.utils as vutils
 from einops import rearrange
-from omegaconf import OmegaConf, ListConfig
+from omegaconf import ListConfig, OmegaConf
+from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
 
-
 from util import instantiate_from_config
+
 
 @torch.no_grad()
 def update_ema(ema_model, model, decay=0.9999):
@@ -479,3 +480,44 @@ class ModelIF(Model):
             frame = self.ae.decoder(frame)
             samples = torch.cat([samples, (frame).unsqueeze(1)], dim=1)
         return samples
+
+
+class ModelInference(nn.Module):
+    """
+    Inference Model.
+    """
+
+    def __init__(self, tokenizer_config, generator_config, enc_scale=4, enc_scale_dino=4):
+        super().__init__()
+
+        # Tokenizer
+        self.ae = instantiate_from_config(tokenizer_config)
+
+        # denoising backbone
+        self.vit = instantiate_from_config(generator_config)
+
+        # Loss and Optimizer
+        self.enc_scale = enc_scale
+
+        self.enc_scale_dino = enc_scale_dino
+
+    def encode_frames(self, images):
+        if len(images.size()) == 5:
+            b, f, e, h, w = images.size()
+            images = rearrange(images, "b f e h w -> (b f) e h w")
+        else:
+            b, e, h, w = images.size()
+            f = 1
+        x = self.ae(images)
+        x0 = x[0] * self.enc_scale
+        x1 = x[1] * self.enc_scale_dino
+        x = torch.cat([x0, x1], dim=1)
+        x = rearrange(x, "(b f) e h w -> b f e h w", b=b, f=f)
+        return x
+
+    def forward(self, images, frame_rate):
+        images = self.encode_frames(images)
+        t = torch.zeros((images.shape[0],), device=images.device)
+        target = torch.empty(0, *images.shape[1:])
+        x, features = self.vit(target, images, t, frame_rate=frame_rate, return_features=True)
+        return x, features

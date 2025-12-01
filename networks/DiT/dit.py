@@ -595,12 +595,11 @@ class STDiT(DiT):
         features = []
         for i, block in enumerate(self.blocks):
             x = block(x, c)
-            # features[i] = x
+            features.append(x)
 
         out = self.final_layer(x[:,-f_pred:], c)                # (N, T, patch_size * out_channels)
         out = self.postprocess_outputs(out)  # (N, T, patch_size ** 2 * out_channels)
         if return_features:
-            raise NotImplementedError
             return out, features
         return out
     

@@ -1,5 +1,6 @@
 import math
 import random
+
 import pytorch_lightning as pl
 import timm
 import torch
@@ -9,6 +10,7 @@ from timm.layers.pos_embed import resample_abs_pos_embed
 from torch.optim.lr_scheduler import LambdaLR
 
 from util import instantiate_from_config
+
 
 class VQModel(pl.LightningModule):
     """
@@ -455,3 +457,42 @@ class VQModelIF(VQModel):
         decs = [dec, dec_se]
         inputs = [input, input_se]
         return inputs, decs, (encoded["quantization_loss"], encoded["entropy_loss"]), distill_conv_out
+
+
+class VQModelInference(nn.Module):
+    """
+    Encoder-only Inference Model.
+    Strips out Quantization (Codebooks) since FM Model uses continuous latents.
+    """
+
+    def __init__(self, encoder_config, e_dim):
+        super().__init__()
+        # We only need the dimensions from quantizer_config, not the object itself
+        z_channels = encoder_config.params["z_channels"]
+
+        # 1. Encoders
+        self.encoder = instantiate_from_config(encoder_config)
+        self.encoder2 = instantiate_from_config(encoder_config)
+
+        # 2. Convolutions (Projects to latent dimension)
+        self.conv = nn.Conv2d(z_channels, e_dim, 1)
+        self.conv2 = nn.Conv2d(z_channels, e_dim, 1)
+
+        # 3. Settings
+        self.normalize_embedding = encoder_config.params.get("normalize_embedding", False)
+
+    def forward(self, x):
+        # Stream 1 (MAE)
+        h = self.encoder(x)
+        h = self.conv(h)
+        if self.normalize_embedding:
+            h = F.normalize(h, p=2, dim=1)
+
+        # Stream 2 (DINO)
+        h2 = self.encoder2(x)
+        h2 = self.conv2(h2)
+        if self.normalize_embedding:
+            h2 = F.normalize(h2, p=2, dim=1)
+
+        # Return tuple strictly for FM model
+        return (h, h2)

@@ -15,7 +15,7 @@ model:
     adjust_lr_to_batch_size: false
     tokenizer_config:
       folder: $TK_WORK_DIR/tokenizer_288x512
-      ckpt_path: checkpoints/tokenizer_288x512.ckpt
+      ckpt_path: checkpoints/last.ckpt
     generator_config:
       target: networks.DiT.dit.SwinSTDiTNoExtraMLP
       params:

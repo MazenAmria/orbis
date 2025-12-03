@@ -20,5 +20,7 @@ def create_model_for_inference(
     model = instantiate_from_config(model_config)
     checkpoint = torch.load(os.path.join(model_folder, ckpt_path), map_location="cpu", weights_only=True)["state_dict"]
     model.load_state_dict(checkpoint, strict=False)
+    for param in model.parameters():
+        param.requires_grad = False
     model.eval()
     return model

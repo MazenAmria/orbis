@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from timm.layers.pos_embed import resample_abs_pos_embed
 from torch.optim.lr_scheduler import LambdaLR
 
-from ..util import instantiate_from_config
+from ...util import instantiate_from_config
 
 
 class VQModel(pl.LightningModule):

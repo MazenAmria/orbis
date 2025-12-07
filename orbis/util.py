@@ -178,8 +178,10 @@ def nondefault_trainer_args(opt):
 
 
 def instantiate_from_config(config):
-    if not "target" in config:
+    if "target" not in config:
         raise KeyError("Expected key `target` to instantiate.")
+    if not config["target"].startswith("orbis."):
+        config["target"] = "orbis." + config["target"]
     return get_obj_from_str(config["target"])(**config.get("params", dict()))
 
 

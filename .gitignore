@@ -1,6 +1,5 @@
 .vscode/
 checkpoints/
-compiled/
 __pycache__/
 .cache/
 *.egg-info/

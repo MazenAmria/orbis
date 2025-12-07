@@ -44,16 +44,23 @@ inference_ae.conv2 = orbis_ae.quant_conv2
 
 inference.vit = orbis.ema_vit
 
-# use torch jit to compile the model
-x = torch.randn(1, 2, 3, 288, 512)
-f = torch.ones (1) * 20.0
+# use torch summary to verify the model
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+inference = inference.to(device)
 
-traced_model = torch.jit.trace(inference, (x, f))
+x = torch.randn(1, 2, 3, 288, 512).to(device)
+f = torch.ones (1).to(device) * 20.0
+
+with torch.no_grad():
+    output, features = inference(x, f)
+
+print("Inference model output shape:", output.shape)
+print("Inference model features count:", len(features))
+print("Inference model features shape:", features[0].shape)
 
 # save checkpoint
 inference_model_folder = os.path.expandvars("$WM_WORK_DIR/orbis_288x512_encoding")
-save_path = os.path.join(inference_model_folder, "compiled/inference.pt")
-os.makedirs(os.path.dirname(save_path), exist_ok=True)
+save_path = os.path.join(inference_model_folder, "checkpoints/last.ckpt")
 
-traced_model.save(save_path)
-print(f"Model saved to {save_path}. You can now move this file.")
+torch.save({"state_dict": inference.state_dict()}, save_path)
+print(f"Saved inference model checkpoint to {save_path}")

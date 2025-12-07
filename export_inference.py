@@ -5,9 +5,9 @@ import os
 import torch
 from omegaconf import OmegaConf
 
-from models.first_stage.vqgan import VQModelIF, VQModelInference
-from models.second_stage.fm_model import ModelIF, ModelInference
-from util import instantiate_from_config
+from .models.first_stage.vqgan import VQModelIF, VQModelInference
+from .models.second_stage.fm_model import ModelIF, ModelInference
+from .util import instantiate_from_config
 
 
 def load_orbis() -> ModelIF:

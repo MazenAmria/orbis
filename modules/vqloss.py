@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from modules.discriminator import NLayerDiscriminator, weights_init
+from .discriminator import NLayerDiscriminator, weights_init
 from .lpips import LPIPS 
 
 def adopt_weight(weight, global_step, threshold=0, value=0.):

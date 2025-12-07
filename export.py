@@ -1,15 +1,10 @@
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-
 import os
 
 import torch
 from omegaconf import OmegaConf
 
-from models.second_stage.fm_model import ModelInference
-from util import instantiate_from_config
+from .models.second_stage.fm_model import ModelInference
+from .util import instantiate_from_config
 
 
 def create_model_for_inference(

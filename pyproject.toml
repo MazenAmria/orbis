@@ -49,13 +49,8 @@ dependencies = [
     "chardet==5.2.0",
 ]
 
-# --- FLAT LAYOUT CONFIGURATION ---
-# This tells pip: "The package 'orbis' is actually the root folder '.'"
-[tool.setuptools]
-packages = ["orbis"]
-
-[tool.setuptools.package-dir]
-"orbis" = "."
+[tool.setuptools.packages.find]
+include = ["orbis*"]
 
 # --- EXCLUSIONS ---
 # Critical: Prevents packaging your checkpoints, git history, or large data

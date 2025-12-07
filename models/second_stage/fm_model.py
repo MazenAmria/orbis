@@ -12,7 +12,7 @@ from omegaconf import ListConfig, OmegaConf
 from torch.optim.lr_scheduler import LambdaLR
 from tqdm import tqdm
 
-from util import instantiate_from_config
+from ...util import instantiate_from_config
 
 
 @torch.no_grad()

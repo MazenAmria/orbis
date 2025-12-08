@@ -6,7 +6,7 @@
 > <br>University of Freiburg<br>
 
 
-![Teaser](imgs/Rollout.png)
+![Teaser](orbis/imgs/Rollout.png)
 
 
 
